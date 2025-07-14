@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #000000;
+  --color-secondary: #8A2BE2;
+  --color-accent: #9945FF;
+  --color-background: #0A0A0A;
+  --color-surface: #1A1A1A;
+  --color-text: #FFFFFF;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.page-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.card-hover {
+  @apply transition-transform duration-300 hover:scale-105;
+}
+
+.purple-gradient {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, var(--color-accent) 100%);
+}
+
+.glass-effect {
+  @apply backdrop-blur-lg bg-black/30;
+}
