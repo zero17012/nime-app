@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
@@ -28,63 +28,122 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
+  // Initialize auth state
+  const initializeAuth = useCallback(async () => {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      
+      if (error) {
+        console.error('Error getting session:', error)
+      } else {
+        setSession(session)
+        setUser(session?.user ?? null)
+      }
+    } catch (error) {
+      console.error('Error initializing auth:', error)
+    } finally {
       setLoading(false)
-    })
+    }
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+
+    // Initialize auth state
+    initializeAuth()
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return
+
+      console.log('Auth state changed:', event, session?.user?.email)
+      
       setSession(session)
       setUser(session?.user ?? null)
-      setLoading(false)
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setLoading(false)
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        setLoading(false)
+      }
     })
 
-    return () => subscription.unsubscribe()
-  }, [])
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [initializeAuth])
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { error }
+    try {
+      setLoading(true)
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+      return { error }
+    } catch (error) {
+      return { error }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+    try {
+      setLoading(true)
+      const { error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+          },
         },
-      },
-    })
-    return { error }
+      })
+      return { error }
+    } catch (error) {
+      return { error }
+    } finally {
+      setLoading(false)
+    }
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    try {
+      setLoading(true)
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    })
-    return { error }
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      return { error }
+    } catch (error) {
+      return { error }
+    }
   }
 
   const updateProfile = async (updates: { full_name?: string; avatar_url?: string }) => {
-    const { error } = await supabase.auth.updateUser({
-      data: updates
-    })
-    return { error }
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: updates
+      })
+      return { error }
+    } catch (error) {
+      return { error }
+    }
   }
 
   const value = {

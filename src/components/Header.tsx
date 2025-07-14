@@ -10,7 +10,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showUserProfile, setShowUserProfile] = useState(false);
 
@@ -20,6 +20,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     } else {
       setShowAuthModal(true);
     }
+  };
+
+  const getUserDisplayName = () => {
+    if (!user) return '';
+    return user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
   };
 
   return (
@@ -44,21 +49,30 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         <div className="flex items-center ml-1 gap-6">
           <button
             onClick={handleUserClick}
-            className="flex items-center gap-2 text-neutral-300 hover:text-white transition-colors"
+            className="flex items-center gap-2 text-neutral-300 hover:text-white transition-colors disabled:opacity-50"
+            disabled={loading}
           >
-            {user ? (
+            {loading ? (
+              <div className="w-5 h-5 border-2 border-neutral-400 border-t-transparent rounded-full animate-spin" />
+            ) : user ? (
               <>
                 {user.user_metadata?.avatar_url ? (
                   <img
                     src={user.user_metadata.avatar_url}
                     alt="Avatar"
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-8 h-8 rounded-full object-cover border-2 border-secondary"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('hidden');
+                    }}
                   />
-                ) : (
+                ) : null}
+                <div className={`w-8 h-8 bg-surface-dark rounded-full flex items-center justify-center ${user.user_metadata?.avatar_url ? 'hidden' : ''}`}>
                   <User className="w-5 h-5" />
-                )}
-                <span className="hidden md:block text-sm">
-                  {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                </div>
+                <span className="hidden md:block text-sm font-medium">
+                  {getUserDisplayName()}
                 </span>
               </>
             ) : (

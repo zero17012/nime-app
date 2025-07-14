@@ -3,12 +3,21 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthModal from './components/auth/AuthModal';
 import Sidebar from './components/Sidebar';
-import Header from './components/Header';
 import Home from './pages/Home';
 import AppDetailsPage from './pages/AppDetailsPage';
 import AddProgramPage from './pages/AddProgramPage';
 
 import { getAppById } from './data/mockData';
+
+const LoadingScreen: React.FC = () => (
+  <div className="min-h-screen bg-surface-dark flex items-center justify-center">
+    <div className="text-center">
+      <img src="/Content/logo.png" alt="Nime" className="h-16 mx-auto mb-4 animate-pulse" />
+      <div className="w-8 h-8 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+      <p className="text-white">Cargando...</p>
+    </div>
+  </div>
+);
 
 const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
@@ -17,24 +26,32 @@ const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   React.useEffect(() => {
     if (!loading && !user) {
       setShowAuthModal(true);
+    } else if (user) {
+      setShowAuthModal(false);
     }
   }, [user, loading]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-surface-dark flex items-center justify-center">
-        <div className="text-center">
-          <img src="/Content/logo.png" alt="Nime" className="h-16 mx-auto mb-4 animate-pulse" />
-          <p className="text-white">Cargando...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
     return (
       <div className="min-h-screen bg-surface-dark flex items-center justify-center">
-        <AuthModal isOpen={showAuthModal} onClose={() => {}} />
+        <div className="text-center mb-8">
+          <img src="/Content/logo.png" alt="Nime" className="h-20 mx-auto mb-6" />
+          <h1 className="text-3xl font-bold text-white mb-2">Bienvenido a Nime</h1>
+          <p className="text-gray-400 mb-8">Inicia sesión para acceder a la aplicación</p>
+        </div>
+        <AuthModal 
+          isOpen={showAuthModal} 
+          onClose={() => {
+            // No permitir cerrar el modal si no hay usuario autenticado
+            if (user) {
+              setShowAuthModal(false);
+            }
+          }} 
+        />
       </div>
     );
   }
@@ -50,24 +67,20 @@ const AppContent = () => {
   return (
     <AuthGuard>
       <div className="min-h-screen bg-surface-dark">
-        <Header />
+        <Sidebar />
         
-        <div className="flex">
-          <Sidebar />
-          
-          <main className="ml-15 md:ml-20 mt-16 w-full p-5 pb-20 md:pb-6 page-transition">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/category/:categoryId" element={<Home />} />
-              <Route path="/search/:query" element={<Home />} />
-         
-              <Route path="/app/:id" element={
-                app ? <AppDetailsPage app={app} /> : <Navigate to="/" replace />
-              } />
-              <Route path="/add" element={<AddProgramPage />} />
-            </Routes>
-          </main>
-        </div>
+        <main className="ml-15 md:ml-20 mt-16 w-full p-5 pb-20 md:pb-6 page-transition">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/category/:categoryId" element={<Home />} />
+            <Route path="/search/:query" element={<Home />} />
+       
+            <Route path="/app/:id" element={
+              app ? <AppDetailsPage app={app} /> : <Navigate to="/" replace />
+            } />
+            <Route path="/add" element={<AddProgramPage />} />
+          </Routes>
+        </main>
       </div>
     </AuthGuard>
   );

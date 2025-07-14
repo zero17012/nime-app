@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { X, Mail, Lock, User, Eye, EyeOff } from 'lucide-react'
+import { X, Mail, Lock, User, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 interface AuthModalProps {
@@ -30,17 +30,51 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setShowPassword(false)
   }
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
+  const validatePassword = (password: string) => {
+    return password.length >= 6
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     setMessage('')
 
+    // Client-side validation
+    if (!validateEmail(email)) {
+      setError('Por favor ingresa un email válido')
+      setLoading(false)
+      return
+    }
+
+    if (mode !== 'reset' && !validatePassword(password)) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      setLoading(false)
+      return
+    }
+
+    if (mode === 'signup' && !fullName.trim()) {
+      setError('Por favor ingresa tu nombre completo')
+      setLoading(false)
+      return
+    }
+
     try {
       if (mode === 'signin') {
         const { error } = await signIn(email, password)
         if (error) {
-          setError(error.message)
+          if (error.message.includes('Invalid login credentials')) {
+            setError('Email o contraseña incorrectos')
+          } else if (error.message.includes('Email not confirmed')) {
+            setError('Por favor confirma tu email antes de iniciar sesión')
+          } else {
+            setError(error.message)
+          }
         } else {
           onClose()
           resetForm()
@@ -48,7 +82,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       } else if (mode === 'signup') {
         const { error } = await signUp(email, password, fullName)
         if (error) {
-          setError(error.message)
+          if (error.message.includes('User already registered')) {
+            setError('Este email ya está registrado')
+          } else {
+            setError(error.message)
+          }
         } else {
           setMessage('¡Cuenta creada! Revisa tu email para confirmar tu cuenta.')
         }
@@ -76,7 +114,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-surface rounded-xl w-full max-w-md p-6 relative">
+      <div className="bg-surface rounded-xl w-full max-w-md p-6 relative animate-scale-in">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
@@ -94,13 +132,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {message && (
-          <div className="mb-4 p-3 bg-green-900/20 border border-green-500 rounded-lg text-green-300 text-sm">
+          <div className="mb-4 p-3 bg-green-900/20 border border-green-500 rounded-lg text-green-300 text-sm flex items-center gap-2">
+            <AlertCircle size={16} />
             {message}
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-900/20 border border-red-500 rounded-lg text-red-300 text-sm">
+          <div className="mb-4 p-3 bg-red-900/20 border border-red-500 rounded-lg text-red-300 text-sm flex items-center gap-2">
+            <AlertCircle size={16} />
             {error}
           </div>
         )}
@@ -109,7 +149,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           {mode === 'signup' && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Nombre completo
+                Nombre completo *
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -117,9 +157,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-surface-dark border border-gray-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-secondary"
+                  className="w-full bg-surface-dark border border-gray-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-secondary transition-colors"
                   placeholder="Tu nombre completo"
                   required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -127,7 +168,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">
-              Email
+              Email *
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -135,9 +176,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-surface-dark border border-gray-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-secondary"
+                className="w-full bg-surface-dark border border-gray-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-secondary transition-colors"
                 placeholder="tu@email.com"
                 required
+                disabled={loading}
               />
             </div>
           </div>
@@ -145,7 +187,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           {mode !== 'reset' && (
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Contraseña
+                Contraseña *
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -153,27 +195,37 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-surface-dark border border-gray-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-secondary"
+                  className="w-full bg-surface-dark border border-gray-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-secondary transition-colors"
                   placeholder="Tu contraseña"
                   required
                   minLength={6}
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  disabled={loading}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+              {mode === 'signup' && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Mínimo 6 caracteres
+                </p>
+              )}
             </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-secondary hover:bg-accent text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-secondary hover:bg-accent text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
+            {loading && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
             {loading ? 'Cargando...' : (
               <>
                 {mode === 'signin' && 'Iniciar Sesión'}
@@ -190,6 +242,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <button
                 onClick={() => switchMode('reset')}
                 className="text-secondary hover:text-accent text-sm transition-colors"
+                disabled={loading}
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -198,6 +251,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <button
                   onClick={() => switchMode('signup')}
                   className="text-secondary hover:text-accent transition-colors"
+                  disabled={loading}
                 >
                   Regístrate
                 </button>
@@ -211,6 +265,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <button
                 onClick={() => switchMode('signin')}
                 className="text-secondary hover:text-accent transition-colors"
+                disabled={loading}
               >
                 Inicia sesión
               </button>
@@ -221,6 +276,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <button
               onClick={() => switchMode('signin')}
               className="text-secondary hover:text-accent text-sm transition-colors"
+              disabled={loading}
             >
               Volver al inicio de sesión
             </button>
