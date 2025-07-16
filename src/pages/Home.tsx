@@ -78,46 +78,43 @@ const Home: React.FC = () => {
       </div>
     );
   }
-if (showAll) {
-  // Se calcula el título fuera del JSX para mayor claridad
-  const title = query 
-    ? `Resultados para "${query}" (${filtered.length})`
-    : `${categoryId?.charAt(0).toUpperCase() + categoryId?.slice(1)}`;
 
-  return (
-    <div className="py-0">
-      <h2 className="text-white text-xl font-semibold mb-5">
-        {title}
-      </h2>
+  if (showAll) {
+    const title = query 
+      ? `Resultados para "${query}" (${filtered.length})`
+      : `${categoryId?.charAt(0).toUpperCase() + categoryId?.slice(1)}`;
 
-      {/* Grilla de aplicaciones con Tailwind */}
- <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
-  {filtered.map((app) => (
-    <div
-      key={app.id}
-      className="bg-neutral-900 rounded-lg overflow-hidden shadow-lg cursor-pointer"
-      onClick={() => handleSelectApp(app)}
-    >
-      <div className="relative h-36">
-        <img
-          src={app.imageUrl}
-          alt={app.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+    return (
+      <div className="py-0">
+        <h2 className="text-white text-xl font-semibold mb-5">
+          {title}
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
+          {filtered.map((app) => (
+            <div
+              key={app.id}
+              className="bg-neutral-900 rounded-lg overflow-hidden shadow-lg cursor-pointer"
+              onClick={() => handleSelectApp(app)}
+            >
+              <div className="relative h-36">
+                <img
+                  src={app.image_url}
+                  alt={app.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+              </div>
+              <div className="p-4">
+                <h3 className="text-white font-semibold mb-2">{app.name}</h3>
+                <p className="text-neutral-400 text-sm line-clamp-2">{app.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-white font-semibold mb-2">{app.name}</h3>
-        <p className="text-neutral-400 text-sm line-clamp-2">{app.description}</p>
-      </div>
-    </div>
-  ))}
-</div>
-
-    </div>
-  );
-}
-
+    );
+  }
 
   return (
     <div>

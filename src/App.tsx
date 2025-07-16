@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthModal from './components/auth/AuthModal';
@@ -19,9 +19,9 @@ const LoadingScreen: React.FC = () => (
 
 const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, loading } = useAuth();
-  const [showAuthModal, setShowAuthModal] = React.useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!loading && !user) {
       setShowAuthModal(true);
     } else if (user) {
