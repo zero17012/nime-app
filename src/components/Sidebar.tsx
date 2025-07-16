@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { categories } from '../data/mockData';
+import { categories } from '../data/categories';
 import * as Icons from 'lucide-react';
 import Header from './Header';
 
@@ -23,9 +23,7 @@ const Sidebar: React.FC = () => {
   const handleCategoryClick = (categoryId: string) => {
     setMobileMenuOpen(false);
 
-    if (categoryId === 'add') {
-      navigate('/add');
-    } else if (categoryId === 'home') {
+    if (categoryId === 'home') {
       navigate('/');
     } else {
       navigate(`/category/${categoryId}`);

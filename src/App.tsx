@@ -5,9 +5,7 @@ import AuthModal from './components/auth/AuthModal';
 import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
 import AppDetailsPage from './pages/AppDetailsPage';
-import AddProgramPage from './pages/AddProgramPage';
-
-import { getAppById } from './data/mockData';
+import { getAppById } from './data/supabaseData';
 
 const LoadingScreen: React.FC = () => (
   <div className="min-h-screen bg-surface-dark flex items-center justify-center">
@@ -61,8 +59,30 @@ const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const AppContent = () => {
   const location = useLocation();
-  const appId = location.pathname.split('/app/')[1];
-  const app = appId ? getAppById(appId) : null;
+  const [app, setApp] = useState(null);
+  const [appLoading, setAppLoading] = useState(false);
+
+  useEffect(() => {
+    const loadApp = async () => {
+      const appId = location.pathname.split('/app/')[1];
+      if (appId) {
+        setAppLoading(true);
+        try {
+          const appData = await getAppById(appId);
+          setApp(appData);
+        } catch (error) {
+          console.error('Error loading app:', error);
+          setApp(null);
+        } finally {
+          setAppLoading(false);
+        }
+      } else {
+        setApp(null);
+      }
+    };
+
+    loadApp();
+  }, [location.pathname]);
 
   return (
     <AuthGuard>
@@ -76,9 +96,19 @@ const AppContent = () => {
             <Route path="/search/:query" element={<Home />} />
        
             <Route path="/app/:id" element={
-              app ? <AppDetailsPage app={app} /> : <Navigate to="/" replace />
+              appLoading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <p className="text-white">Cargando aplicación...</p>
+                  </div>
+                </div>
+              ) : app ? (
+                <AppDetailsPage app={app} />
+              ) : (
+                <Navigate to="/" replace />
+              )
             } />
-            <Route path="/add" element={<AddProgramPage />} />
           </Routes>
         </main>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Download, CheckCircle } from 'lucide-react';
-import { AppItem } from '../types';
+import { AppItem } from '../lib/supabase';
 
 interface AppCardProps {
   app: AppItem;
@@ -77,7 +77,7 @@ const AppCard: React.FC<AppCardProps> = ({ app, onClick }) => {
     >
       <div className="relative aspect-video">
         <img 
-          src={app.imageUrl} 
+          src={app.image_url} 
           alt={app.name} 
           className="w-full h-full object-cover"
           loading="lazy"

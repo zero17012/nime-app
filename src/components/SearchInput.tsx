@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { AppItem } from '../types';
-import { getAppsBySearch } from '../data/mockData';
+import { AppItem } from '../lib/supabase';
+import { getAppsBySearch } from '../data/supabaseData';
 
 const SearchInput: React.FC = () => {
   const navigate = useNavigate();
@@ -32,14 +32,18 @@ const SearchInput: React.FC = () => {
     }
 
     searchTimeout.current = setTimeout(() => {
-      if (value.length > 0) {
-        const searchResults = getAppsBySearch(value);
-        setResults(searchResults);
-        setShowResults(true);
-      } else {
-        setResults([]);
-        setShowResults(false);
-      }
+      const performSearch = async () => {
+        if (value.length > 0) {
+          const searchResults = await getAppsBySearch(value);
+          setResults(searchResults);
+          setShowResults(true);
+        } else {
+          setResults([]);
+          setShowResults(false);
+        }
+      };
+
+      performSearch();
     }, 300);
   };
 

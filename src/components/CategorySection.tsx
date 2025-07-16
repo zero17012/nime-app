@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import AppCard from './AppCard';
-import { AppItem } from '../types';
+import { AppItem } from '../lib/supabase';
 
 interface CategorySectionProps {
   title: string;

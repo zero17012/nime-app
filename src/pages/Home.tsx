@@ -2,37 +2,62 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import HeroCarousel from '../components/HeroCarousel';
 import CategorySection from '../components/CategorySection';
-import { AppItem } from '../types';
-import { featuredApps, getAppsByCategory, getAppsBySearch } from '../data/mockData';
+import { AppItem } from '../lib/supabase';
+import { getFeaturedApps, getAppsByCategory, getAppsBySearch } from '../data/supabaseData';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const { categoryId, query } = useParams();
+  const [featuredApps, setFeaturedApps] = useState<AppItem[]>([]);
   const [gamesApps, setGamesApps] = useState<AppItem[]>([]);
   const [productivityApps, setProductivityApps] = useState<AppItem[]>([]);
   const [entertainmentApps, setEntertainmentApps] = useState<AppItem[]>([]);
   const [filtered, setFiltered] = useState<AppItem[]>([]);
   const [showAll, setShowAll] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setGamesApps(getAppsByCategory('games'));
-    setProductivityApps(getAppsByCategory('apps'));
-    setEntertainmentApps(getAppsByCategory('entertainment'));
+    const loadApps = async () => {
+      setLoading(true);
+      try {
+        const [featured, games, apps, entertainment] = await Promise.all([
+          getFeaturedApps(),
+          getAppsByCategory('games'),
+          getAppsByCategory('apps'),
+          getAppsByCategory('entertainment')
+        ]);
+        
+        setFeaturedApps(featured);
+        setGamesApps(games);
+        setProductivityApps(apps);
+        setEntertainmentApps(entertainment);
+      } catch (error) {
+        console.error('Error loading apps:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadApps();
   }, []);
 
   useEffect(() => {
-    if (query) {
-      const searchResults = getAppsBySearch(query);
-      setFiltered(searchResults);
-      setShowAll(true);
-    } else if (categoryId && categoryId !== 'home') {
-      const categoryApps = getAppsByCategory(categoryId);
-      setFiltered(categoryApps);
-      setShowAll(true);
-    } else {
-      setFiltered([]);
-      setShowAll(false);
-    }
+    const loadFilteredApps = async () => {
+      if (query) {
+        const searchResults = await getAppsBySearch(query);
+        setFiltered(searchResults);
+        setShowAll(true);
+      } else if (categoryId && categoryId !== 'home') {
+        const categoryApps = await getAppsByCategory(categoryId);
+        setFiltered(categoryApps);
+        setShowAll(true);
+      } else {
+        setFiltered([]);
+        setShowAll(false);
+      }
+    };
+
+    loadFilteredApps();
   }, [categoryId, query]);
 
   const handleViewAll = (category: string) => {
@@ -43,6 +68,16 @@ const Home: React.FC = () => {
     navigate(`/app/${app.id}`);
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white">Cargando aplicaciones...</p>
+        </div>
+      </div>
+    );
+  }
 if (showAll) {
   // Se calcula el título fuera del JSX para mayor claridad
   const title = query 
@@ -89,26 +124,32 @@ if (showAll) {
       <HeroCarousel featuredApps={featuredApps} onSelectApp={handleSelectApp} />
       
       <div className="py-6">
-        <CategorySection
-          title="Juegos"
-          apps={gamesApps}
-          onSelectApp={handleSelectApp}
-          onViewAll={() => handleViewAll('games')}
-        />
+        {gamesApps.length > 0 && (
+          <CategorySection
+            title="Juegos"
+            apps={gamesApps}
+            onSelectApp={handleSelectApp}
+            onViewAll={() => handleViewAll('games')}
+          />
+        )}
         
-        <CategorySection
-          title="Aplicaciones"
-          apps={productivityApps}
-          onSelectApp={handleSelectApp}
-          onViewAll={() => handleViewAll('apps')}
-        />
+        {productivityApps.length > 0 && (
+          <CategorySection
+            title="Aplicaciones"
+            apps={productivityApps}
+            onSelectApp={handleSelectApp}
+            onViewAll={() => handleViewAll('apps')}
+          />
+        )}
         
-        <CategorySection
-          title="Entretenimiento"
-          apps={entertainmentApps}
-          onSelectApp={handleSelectApp}
-          onViewAll={() => handleViewAll('entertainment')}
-        />
+        {entertainmentApps.length > 0 && (
+          <CategorySection
+            title="Entretenimiento"
+            apps={entertainmentApps}
+            onSelectApp={handleSelectApp}
+            onViewAll={() => handleViewAll('entertainment')}
+          />
+        )}
       </div>
     </div>
   );

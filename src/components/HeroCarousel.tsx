@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { AppItem } from '../types';
+import { AppItem } from '../lib/supabase';
 
 interface HeroCarouselProps {
   featuredApps: AppItem[];
@@ -109,7 +109,7 @@ const HeroCarousel: React.FC<HeroCarouselProps> = ({ featuredApps, onSelectApp }
           >
             <div className="relative h-full w-full">
               <img 
-                src={app.imageUrl} 
+                src={app.image_url} 
                 alt={app.name}
                 className={`w-full h-full object-cover transition-opacity duration-200 ${
                   loadedImages.has(index) ? 'opacity-90' : 'opacity-0'

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppItem } from '../types';
+import { AppItem } from '../lib/supabase';
 import {
   ArrowLeft,
   Download,
@@ -296,6 +296,7 @@ const handleDownload = async (index: number) => {
 
           <section>
             <h2 className="text-2xl font-semibold mb-4">Requisitos del Sistema</h2>
+            {app.system_requirements && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-surface p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Mínimos</h3>
@@ -304,35 +305,35 @@ const handleDownload = async (index: number) => {
                     <Monitor className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Sistema Operativo</p>
-                      <p className="text-white">{app.systemRequirements?.minimum.os}</p>
+                      <p className="text-white">{app.system_requirements?.minimum.os}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Cpu className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Procesador</p>
-                      <p className="text-white">{app.systemRequirements?.minimum.processor}</p>
+                      <p className="text-white">{app.system_requirements?.minimum.processor}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HardDrive className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Memoria RAM</p>
-                      <p className="text-white">{app.systemRequirements?.minimum.memory}</p>
+                      <p className="text-white">{app.system_requirements?.minimum.memory}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Monitor className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Gráficos</p>
-                      <p className="text-white">{app.systemRequirements?.minimum.graphics}</p>
+                      <p className="text-white">{app.system_requirements?.minimum.graphics}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HardDrive className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Almacenamiento</p>
-                      <p className="text-white">{app.systemRequirements?.minimum.storage}</p>
+                      <p className="text-white">{app.system_requirements?.minimum.storage}</p>
                     </div>
                   </div>
                 </div>
@@ -345,40 +346,41 @@ const handleDownload = async (index: number) => {
                     <Monitor className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Sistema Operativo</p>
-                      <p className="text-white">{app.systemRequirements?.recommended.os}</p>
+                      <p className="text-white">{app.system_requirements?.recommended.os}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Cpu className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Procesador</p>
-                      <p className="text-white">{app.systemRequirements?.recommended.processor}</p>
+                      <p className="text-white">{app.system_requirements?.recommended.processor}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HardDrive className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Memoria RAM</p>
-                      <p className="text-white">{app.systemRequirements?.recommended.memory}</p>
+                      <p className="text-white">{app.system_requirements?.recommended.memory}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Monitor className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Gráficos</p>
-                      <p className="text-white">{app.systemRequirements?.recommended.graphics}</p>
+                      <p className="text-white">{app.system_requirements?.recommended.graphics}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HardDrive className="w-5 h-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-gray-400">Almacenamiento</p>
-                      <p className="text-white">{app.systemRequirements?.recommended.storage}</p>
+                      <p className="text-white">{app.system_requirements?.recommended.storage}</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            )}
           </section>
         </div>
 
@@ -386,7 +388,7 @@ const handleDownload = async (index: number) => {
           <section className="bg-surface rounded-xl p-6 sticky top-24">
             <div className="text-center mb-4">
               <span className="text-2xl font-bold text-secondary">
-                {app.price === 'Free' || app.price === 'Gratis' ? 'Gratis' : `${app.price}`}
+                {app.price === 'Free' || app.price === 'Gratis' ? 'Gratis' : app.price}
               </span>
             </div>
 
