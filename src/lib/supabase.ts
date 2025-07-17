@@ -43,6 +43,40 @@ export type AppItem = {
   download_url: string
   type: string
   featured: boolean
+  versions?: Array<{
+    version: string
+    release_date: string
+    download_url: string
+    changes: string
+  }>
+  dependencies?: Array<{
+    name: string
+    version: string
+    required: boolean
+    download_url: string
+  }>
+  downloads?: Array<{
+    quality: string
+    format: string
+    size: string
+    url: string
+    server: string
+    speed: string
+  }>
+  episodes?: Array<{
+    season: number
+    episode: number
+    title: string
+    duration: string
+    description: string
+    download_url: string
+    quality: string
+    size: string
+  }>
+  duration?: string
+  genre?: string
+  director?: string
+  cast?: string[]
   system_requirements?: {
     minimum: {
       os: string
